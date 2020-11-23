@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.Map;
 
 import com.google.common.collect.Maps;
-
 import slipp.model.User;
 
 public class DataBase {
@@ -16,6 +15,10 @@ public class DataBase {
 
     public static User findUserById(String userId) {
         return users.get(userId);
+    }
+
+    public static void truncate() {
+        users.clear();
     }
 
     public static Collection<User> findAll() {

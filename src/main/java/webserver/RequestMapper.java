@@ -7,9 +7,10 @@ import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import slipp.web.LoginController;
+import slipp.web.UserController;
 import webserver.controller.Controller;
 import webserver.controller.PageController;
-import slipp.web.UserController;
 import webserver.http.request.HttpRequest;
 import webserver.http.response.HttpResponse;
 import webserver.http.response.HttpStatus;
@@ -20,6 +21,7 @@ public class RequestMapper {
 
     static {
         mapper.put("/user/create", new UserController());
+        mapper.put("/user/login", new LoginController());
     }
 
     private RequestMapper() {

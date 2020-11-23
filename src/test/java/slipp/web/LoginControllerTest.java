@@ -10,6 +10,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import slipp.db.DataBase;
+import slipp.model.User;
 import webserver.http.request.HttpRequest;
 import webserver.http.request.RequestBody;
 import webserver.http.request.RequestHeaders;
@@ -18,45 +19,53 @@ import webserver.http.request.RequestMethod;
 import webserver.http.request.RequestUrl;
 import webserver.http.response.HttpResponse;
 
-class UserControllerTest {
-    private UserController userController = new UserController();
+class LoginControllerTest {
+    private LoginController loginController = new LoginController();
 
     @AfterEach
     void tearDown() {
         DataBase.truncate();
     }
 
-    @DisplayName("유저를 생성한다.")
+    @DisplayName("로그인 요청을 수행한다.")
     @Test
-    void createUser() throws Exception {
-        RequestLine requestLine = new RequestLine(RequestMethod.POST, RequestUrl.from("/user/create"),
+    void doPost() throws Exception {
+        DataBase.addUser(new User("hello", "password", "myname", "is@name.com"));
+
+        RequestLine requestLine = new RequestLine(RequestMethod.POST, RequestUrl.from("/user/login"),
             "HTTP/1.1");
         RequestHeaders requestHeaders = new RequestHeaders(new HashMap<>());
         HttpRequest httpRequest = new HttpRequest(requestLine, requestHeaders,
-            RequestBody.from("userId=hello&password=password&name=myname&email=is@name.com"));
+            RequestBody.from("userId=hello&password=password"));
         HttpResponse httpResponse = HttpResponse.ofVersion(httpRequest.getHttpVersion());
 
-        userController.service(httpRequest, httpResponse);
+        loginController.doPost(httpRequest, httpResponse);
 
         assertAll(
             () -> assertThat(httpResponse)
                 .extracting("responseStatus")
                 .extracting("httpStatus")
                 .extracting("statusCode").isEqualTo(302),
-            () -> assertThat(DataBase.findUserById("hello")).extracting("name").isEqualTo("myname")
+            () -> assertThat(httpResponse)
+                .extracting("responseHeaders")
+                .extracting("headers", MAP)
+                .extractingByKey("Set-Cookie", STRING).contains("logined=true")
         );
     }
 
-    @DisplayName("잘못된 값이 들어올 시 400 처리")
+    @DisplayName("잘못된 유저 정보를 입력시 예외 처리한다.")
     @Test
-    void createUserWithException() throws Exception {
-        RequestLine requestLine = new RequestLine(RequestMethod.POST, RequestUrl.from("/user/create"),
+    void doPostWithWrongUserInfo() throws Exception {
+        DataBase.addUser(new User("hello", "password", "myname", "is@name.com"));
+
+        RequestLine requestLine = new RequestLine(RequestMethod.POST, RequestUrl.from("/user/login"),
             "HTTP/1.1");
         RequestHeaders requestHeaders = new RequestHeaders(new HashMap<>());
-        HttpRequest httpRequest = new HttpRequest(requestLine, requestHeaders, RequestBody.from("name.com"));
+        HttpRequest httpRequest = new HttpRequest(requestLine, requestHeaders,
+            RequestBody.from("userId=wrong&password=password"));
         HttpResponse httpResponse = HttpResponse.ofVersion(httpRequest.getHttpVersion());
 
-        userController.service(httpRequest, httpResponse);
+        loginController.doPost(httpRequest, httpResponse);
 
         assertThat(httpResponse)
             .extracting("responseStatus")
