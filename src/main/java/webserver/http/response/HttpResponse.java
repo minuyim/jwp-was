@@ -2,8 +2,11 @@ package webserver.http.response;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
+
+import webserver.http.Cookie;
 
 public class HttpResponse {
     private static final String CONTENT_TYPE = "Content-Type";
@@ -14,10 +17,12 @@ public class HttpResponse {
     private ResponseStatusLine responseStatus;
     private ResponseHeaders responseHeaders;
     private ResponseBody responseBody;
+    private ResponseCookies responseCookies;
 
     private HttpResponse(ResponseStatusLine responseStatus) {
         this.responseStatus = responseStatus;
         this.responseHeaders = new ResponseHeaders(new HashMap<>());
+        this.responseCookies = new ResponseCookies(new ArrayList<>());
     }
 
     public static HttpResponse ofVersion(String httpVersion) {
@@ -26,6 +31,10 @@ public class HttpResponse {
 
     public void setHeader(String key, String value) {
         responseHeaders.setHeader(key, value);
+    }
+
+    public void addCookie(Cookie cookie) {
+        responseCookies.add(cookie);
     }
 
     public void writeBody(String body) {
@@ -61,6 +70,7 @@ public class HttpResponse {
     public void write(DataOutputStream dos) throws IOException {
         responseStatus.write(dos);
         responseHeaders.write(dos);
+        responseCookies.write(dos);
         if (Objects.nonNull(responseBody)) {
             responseBody.write(dos);
         }

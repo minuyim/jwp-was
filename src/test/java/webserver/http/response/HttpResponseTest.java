@@ -10,6 +10,8 @@ import org.assertj.core.api.MapAssert;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import webserver.http.Cookie;
+
 class HttpResponseTest {
     @DisplayName("Http 버전에 맞는 Response를 생성한다.")
     @Test
@@ -109,5 +111,29 @@ class HttpResponseTest {
         assertThatThrownBy(() -> httpResponse.sendError(HttpStatus.OK, "not found"))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("에러 코드만");
+    }
+
+    @DisplayName("쿠키를 설정하는 응답을 만든다.")
+    @Test
+    void writeCookie() throws Exception {
+        HttpResponse httpResponse = HttpResponse.ofVersion("HTTP/1.1");
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        DataOutputStream dataOutputStream = new DataOutputStream(out);
+
+        httpResponse.writeBody("hello");
+        Cookie cookie = new Cookie("login", "true");
+        cookie.setPath("/");
+        httpResponse.addCookie(cookie);
+
+        httpResponse.write(dataOutputStream);
+        dataOutputStream.flush();
+
+        assertAll(
+            () -> assertThat(httpResponse)
+                .extracting("responseCookies")
+                .extracting("cookies", LIST)
+                .hasSize(1),
+            () -> assertThat(out.toString()).contains("Set-Cookie: login=true; Path=/")
+        );
     }
 }

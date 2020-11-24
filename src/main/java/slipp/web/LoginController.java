@@ -5,13 +5,14 @@ import java.util.Objects;
 import slipp.db.DataBase;
 import slipp.model.User;
 import webserver.controller.AbstractController;
+import webserver.http.Cookie;
 import webserver.http.request.HttpRequest;
 import webserver.http.response.HttpResponse;
 import webserver.http.response.HttpStatus;
 
 public class LoginController extends AbstractController {
     @Override
-    public void doPost(HttpRequest httpRequest, HttpResponse httpResponse) throws Exception {
+    public void doPost(HttpRequest httpRequest, HttpResponse httpResponse) {
         String userId = httpRequest.getParameter("userId");
         String password = httpRequest.getParameter("password");
 
@@ -21,7 +22,9 @@ public class LoginController extends AbstractController {
             return;
         }
 
-        httpResponse.setHeader("Set-Cookie", "logined=true; Path=/");
+        Cookie cookie = new Cookie("logined", "true");
+        cookie.setPath("/");
+        httpResponse.addCookie(cookie);
         httpResponse.sendRedirect("/index.html");
     }
 }
