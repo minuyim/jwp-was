@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import slipp.db.DataBase;
 import slipp.model.User;
+import webserver.http.Cookie;
 import webserver.http.request.HttpRequest;
 import webserver.http.request.RequestBody;
 import webserver.http.request.RequestHeaders;
@@ -41,15 +42,19 @@ class LoginControllerTest {
 
         loginController.doPost(httpRequest, httpResponse);
 
+        Cookie cookie = new Cookie("logined", "true");
+        cookie.setPath("/");
+
         assertAll(
             () -> assertThat(httpResponse)
                 .extracting("responseStatus")
                 .extracting("httpStatus")
                 .extracting("statusCode").isEqualTo(302),
             () -> assertThat(httpResponse)
-                .extracting("responseHeaders")
-                .extracting("headers", MAP)
-                .extractingByKey("Set-Cookie", STRING).contains("logined=true")
+                .extracting("responseCookies")
+                .extracting("cookies", LIST)
+                .usingFieldByFieldElementComparator()
+                .contains(cookie)
         );
     }
 

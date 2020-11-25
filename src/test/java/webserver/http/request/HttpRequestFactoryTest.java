@@ -7,9 +7,6 @@ import java.io.ByteArrayInputStream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import webserver.http.request.HttpRequest;
-import webserver.http.request.HttpRequestFactory;
-
 class HttpRequestFactoryTest {
 
     @DisplayName("생성 테스트")
@@ -28,6 +25,21 @@ class HttpRequestFactoryTest {
         assertThat(httpRequest).isNotNull();
     }
 
+    @DisplayName("빈 바디 생성 테스트")
+    @Test
+    void createWithEmpty() throws Exception {
+        String request = "POST /index.html?a=1&b=2 HTTP/1.1" + System.lineSeparator()
+            + "Host: localhost:8080" + System.lineSeparator()
+            + "Connection: keep-alive" + System.lineSeparator()
+            + "Content-Length: 0" + System.lineSeparator()
+            + "Accept: */*" + System.lineSeparator()
+            + System.lineSeparator();
+
+        HttpRequest httpRequest = HttpRequestFactory.create(new ByteArrayInputStream(request.getBytes()));
+
+        assertThat(httpRequest).isNotNull();
+    }
+
     @DisplayName("body와 http method가 맞지 않는 경우 빈 바디를 넣는다.")
     @Test
     void createWithException() throws Exception {
@@ -39,6 +51,8 @@ class HttpRequestFactoryTest {
             + System.lineSeparator()
             + "i'm body";
 
-        assertThat(HttpRequestFactory.create(new ByteArrayInputStream(request.getBytes())));
+        assertThat(HttpRequestFactory.create(new ByteArrayInputStream(request.getBytes()))).extracting(
+            HttpRequest::getBody, STRING)
+            .isEmpty();
     }
 }

@@ -2,6 +2,8 @@ package webserver.utils;
 
 import static java.util.stream.Collectors.*;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -15,6 +17,7 @@ public class ValueExtractor {
     private static final String DEFAULT_VALUE = "";
     private static final String PARAM_DELIMITER = "&";
     private static final String KEY_VALUE_DELIMITER = "=";
+    private static final String UTF_8 = "UTF-8";
 
     private ValueExtractor() {
     }
@@ -33,6 +36,10 @@ public class ValueExtractor {
         if (param.length < KEY_VALUE_LENGTH) {
             return DEFAULT_VALUE;
         }
-        return param[VALUE_INDEX];
+        try {
+            return URLDecoder.decode(param[VALUE_INDEX], UTF_8);
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalArgumentException();
+        }
     }
 }

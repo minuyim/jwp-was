@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import slipp.web.LoginController;
 import slipp.web.UserController;
+import slipp.web.UserListController;
 import webserver.controller.Controller;
 import webserver.controller.PageController;
 import webserver.http.request.HttpRequest;
@@ -22,6 +23,7 @@ public class RequestMapper {
     static {
         mapper.put("/user/create", new UserController());
         mapper.put("/user/login", new LoginController());
+        mapper.put("/user/list", new UserListController());
     }
 
     private RequestMapper() {

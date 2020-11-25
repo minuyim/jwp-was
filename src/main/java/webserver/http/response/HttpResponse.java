@@ -69,8 +69,8 @@ public class HttpResponse {
 
     public void write(DataOutputStream dos) throws IOException {
         responseStatus.write(dos);
-        responseHeaders.write(dos);
         responseCookies.write(dos);
+        responseHeaders.write(dos);
         if (Objects.nonNull(responseBody)) {
             responseBody.write(dos);
         }

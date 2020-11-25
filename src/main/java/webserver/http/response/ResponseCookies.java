@@ -31,7 +31,7 @@ public class ResponseCookies {
     private String cookieToString(Cookie cookie) {
         String cookieString = cookie.getName() + "=" + cookie.getValue();
         if (Objects.nonNull(cookie.getPath())) {
-            cookieString = cookieString + "; Path=" + cookie.getPath();
+            cookieString = cookieString + "; Path=" + cookie.getPath() + ";";
         }
         return cookieString;
     }
