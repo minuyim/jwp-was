@@ -5,10 +5,10 @@ import java.util.Objects;
 import slipp.db.DataBase;
 import slipp.model.User;
 import webserver.controller.AbstractController;
-import webserver.http.Cookie;
 import webserver.http.request.HttpRequest;
 import webserver.http.response.HttpResponse;
 import webserver.http.response.HttpStatus;
+import webserver.http.session.HttpSession;
 
 public class LoginController extends AbstractController {
     @Override
@@ -22,9 +22,8 @@ public class LoginController extends AbstractController {
             return;
         }
 
-        Cookie cookie = new Cookie("logined", "true");
-        cookie.setPath("/");
-        httpResponse.addCookie(cookie);
+        HttpSession session = httpRequest.getSession();
+        session.setAttribute("logined", "true");
         httpResponse.sendRedirect("/index.html");
     }
 }

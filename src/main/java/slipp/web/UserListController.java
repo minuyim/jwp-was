@@ -1,7 +1,7 @@
 package slipp.web;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.Objects;
 
 import com.github.jknack.handlebars.Handlebars;
 import com.github.jknack.handlebars.Helper;
@@ -11,15 +11,14 @@ import com.github.jknack.handlebars.io.TemplateLoader;
 import slipp.db.DataBase;
 import slipp.model.User;
 import webserver.controller.AbstractController;
-import webserver.http.Cookie;
 import webserver.http.request.HttpRequest;
 import webserver.http.response.HttpResponse;
+import webserver.http.session.HttpSession;
 
 public class UserListController extends AbstractController {
     @Override
     public void doGet(HttpRequest httpRequest, HttpResponse httpResponse) throws Exception {
-        List<Cookie> cookies = httpRequest.getCookies();
-        if (!isLogin(cookies)) {
+        if (!isLogin(httpRequest.getSession())) {
             httpResponse.sendRedirect("/user/login.html");
             return;
         }
@@ -36,8 +35,10 @@ public class UserListController extends AbstractController {
         httpResponse.writeBody(template.apply(users));
     }
 
-    private boolean isLogin(List<Cookie> cookies) {
-        return cookies.stream()
-            .anyMatch(cookie -> cookie.getName().equals("logined") && Boolean.parseBoolean(cookie.getValue()));
+    private boolean isLogin(HttpSession httpSession) {
+        if (Objects.isNull(httpSession)) {
+            return false;
+        }
+        return Objects.equals(httpSession.getAttribute("logined"), "true");
     }
 }

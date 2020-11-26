@@ -19,6 +19,7 @@ import webserver.http.request.RequestLine;
 import webserver.http.request.RequestMethod;
 import webserver.http.request.RequestUrl;
 import webserver.http.response.HttpResponse;
+import webserver.http.session.HttpSession;
 
 class LoginControllerTest {
     private LoginController loginController = new LoginController();
@@ -42,7 +43,9 @@ class LoginControllerTest {
 
         loginController.doPost(httpRequest, httpResponse);
 
-        Cookie cookie = new Cookie("logined", "true");
+        HttpSession session = httpRequest.getSession();
+
+        Cookie cookie = new Cookie("JSESSIONID", session.getId());
         cookie.setPath("/");
 
         assertAll(
@@ -50,11 +53,7 @@ class LoginControllerTest {
                 .extracting("responseStatus")
                 .extracting("httpStatus")
                 .extracting("statusCode").isEqualTo(302),
-            () -> assertThat(httpResponse)
-                .extracting("responseCookies")
-                .extracting("cookies", LIST)
-                .usingFieldByFieldElementComparator()
-                .contains(cookie)
+            () -> assertThat(session.getAttribute("logined")).isEqualTo("true")
         );
     }
 

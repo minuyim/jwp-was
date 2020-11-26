@@ -9,6 +9,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import webserver.http.Cookie;
+import webserver.http.session.HttpSession;
+import webserver.http.session.InMemorySessionRepository;
 
 public class HttpRequest {
     private static final String COOKIE = "Cookie";
@@ -16,10 +18,12 @@ public class HttpRequest {
     private static final String KEY_VALUE_DELIMETER = "=";
     private static final int KEY_INDEX = 0;
     private static final int VALUE_INDEX = 1;
+    private static final String SESSION_ID = "SESSIONID";
 
     private RequestLine requestLine;
     private RequestHeaders requestHeaders;
     private RequestBody requestBody = RequestBody.from("");
+    private HttpSession httpSession;
 
     public HttpRequest(RequestLine requestLine, RequestHeaders requestHeaders, RequestBody requestBody) {
         this.requestLine = requestLine;
@@ -59,10 +63,6 @@ public class HttpRequest {
         return requestLine.getHttpVersion();
     }
 
-    public String getHeader(String key) {
-        return requestHeaders.get(key);
-    }
-
     public List<Cookie> getCookies() {
         String cookieString = requestHeaders.get(COOKIE);
         if (Objects.isNull(cookieString)) {
@@ -73,6 +73,22 @@ public class HttpRequest {
             .map(cookie -> cookie.split(KEY_VALUE_DELIMETER))
             .map(cookie -> new Cookie(cookie[KEY_INDEX], cookie[VALUE_INDEX].replace(";", "")))
             .collect(Collectors.toList());
+    }
+
+    public HttpSession getSession() {
+        return getSession(true);
+    }
+
+    public HttpSession getSession(boolean create) {
+        if (Objects.nonNull(httpSession)) {
+            return httpSession;
+        }
+        httpSession = InMemorySessionRepository.getSession(getSessionId(), create);
+        return httpSession;
+    }
+
+    private String getSessionId() {
+        return requestHeaders.get(SESSION_ID);
     }
 
     public RequestUrl getRequestUrl() {

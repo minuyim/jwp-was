@@ -18,6 +18,8 @@ import webserver.http.request.RequestLine;
 import webserver.http.request.RequestMethod;
 import webserver.http.request.RequestUrl;
 import webserver.http.response.HttpResponse;
+import webserver.http.session.HttpSession;
+import webserver.http.session.InMemorySessionRepository;
 
 class UserListControllerTest {
     private UserListController userListController = new UserListController();
@@ -32,18 +34,20 @@ class UserListControllerTest {
     void doGet() throws Exception {
         User user = new User("testId", "password", "test", "test@email.com");
         DataBase.addUser(user);
+        HttpSession preSession = InMemorySessionRepository.getSession(null, true);
+        preSession.setAttribute("logined", "true");
 
         RequestLine requestLine = new RequestLine(RequestMethod.GET, RequestUrl.from("/user/list"),
             "HTTP/1.1");
         HashMap<String, String> httpHeaders = new HashMap<>();
-        httpHeaders.put("Cookie", "logined=true");
+        httpHeaders.put("SESSIONID", preSession.getId());
         RequestHeaders requestHeaders = new RequestHeaders(httpHeaders);
         HttpRequest httpRequest = new HttpRequest(requestLine, requestHeaders, RequestBody.from(""));
         HttpResponse httpResponse = HttpResponse.ofVersion(httpRequest.getHttpVersion());
 
         userListController.service(httpRequest, httpResponse);
 
-        String expected = "<th scope=\"row\">1</th> <td>testId</td> <td>test</td> <td>test@email.com</td><td><a href=\"#\" class=\"btn btn-success\" role=\"button\">수정</a></td>";
+        String expected = "testId";
         assertAll(
             () -> assertThat(httpResponse)
                 .extracting("responseStatus")
